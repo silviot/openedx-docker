@@ -1,0 +1,11 @@
+version: "3"
+services:
+
+  ############# Configure volumes for custom theme
+  lms:
+    volumes:
+      - ./themes:/openedx/themes
+
+  cms:
+    volumes:
+      - ./themes:/openedx/themes

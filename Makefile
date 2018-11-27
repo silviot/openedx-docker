@@ -15,7 +15,7 @@ endif
 ifeq ($(ACTIVATE_HTTPS), 1)
 	post_configure_targets += https-certificate
 endif
-extra_migrate_targets = 
+extra_migrate_targets =
 ifeq ($(ACTIVATE_XQUEUE), 1)
 	extra_migrate_targets += migrate-xqueue
 	DOCKER_COMPOSE += -f docker-compose-xqueue.yml
@@ -32,6 +32,12 @@ DOCKER_COMPOSE_RUN = $(DOCKER_COMPOSE) run --rm
 DOCKER_COMPOSE_RUN_OPENEDX = $(DOCKER_COMPOSE_RUN) -e SETTINGS=$(EDX_PLATFORM_SETTINGS)
 ifneq ($(EDX_PLATFORM_PATH),)
 	DOCKER_COMPOSE_RUN_OPENEDX += -e USERID=$(USERID) --volume="$(EDX_PLATFORM_PATH):/openedx/edx-platform"
+endif
+
+ifneq ($(THEME_GIT_URL),)
+	DOCKER_COMPOSE_RUN += --volume="$(PWD)/themes:/openedx/themes"
+	DOCKER_COMPOSE += -f docker-compose-theme.yml
+	post_configure_targets += clone-theme
 endif
 
 DOCKER_COMPOSE_RUN_LMS = $(DOCKER_COMPOSE_RUN_OPENEDX) -p 8000:8000 lms
@@ -131,7 +137,7 @@ assets-development-cms:
 		&& NODE_ENV=development ./node_modules/.bin/webpack --config=webpack.dev.config.js \
 		&& ./manage.py cms --settings=$(EDX_PLATFORM_SETTINGS) compile_sass studio \
 		&& python -c \"import pavelib.assets; pavelib.assets.collect_assets(['studio'], '$(EDX_PLATFORM_SETTINGS)')\""
-	
+
 
 ##################### Information
 
@@ -152,6 +158,7 @@ info: ## Print some information about the current install, for debugging
 	docker-compose --version
 	@echo "-------------------------"
 	echo $$EDX_PLATFORM_PATH
+	echo $$EDX_THEMES_PATH
 	echo $$EDX_PLATFORM_SETTINGS
 
 
@@ -180,7 +187,7 @@ build-notes: ## Build the Notes docker image
 	docker build -t regis/openedx-notes:latest -t regis/openedx-notes:hawthorn notes/
 build-xqueue: ## Build the Xqueue docker image
 	docker build -t regis/openedx-xqueue:latest -t regis/openedx-xqueue:hawthorn xqueue/
-build-android: ## Build the docker image for Android 
+build-android: ## Build the docker image for Android
 	docker build -t regis/openedx-android:latest android/
 
 ################### Pushing images to docker hub
@@ -236,6 +243,24 @@ https-certificate: ## Generate https certificates
 
 https-certificate-renew: ## Renew https certificates
 	$(https_command) $(certbot_image) renew
+
+clone-theme: ## Clone configured theme into the `themes` directory
+	@mkdir -p $(PWD)/themes && \
+	DIRNAME=$$(basename $(THEME_GIT_URL) .git); \
+	DIRPATH=$(PWD)/themes/$(DIRNAME); \
+	if [ -d $${DIRPATH} ] ; then \
+		CURRENT_URL=$$(git -C themes/reporterfabrik-theme/ config --get remote.origin.url); \
+		if [ "$${CURRENT_URL}" = $(THEME_GIT_URL) ]; then \
+			git -C $${DIRNAME} pull; \
+		else \
+			echo The GIT_THEME_URL is $(THEME_GIT_URL) ; \
+			echo but the directory $${DIRPATH} ; \
+			echo is cloned from this URL: $${CURRENT_URL} ; \
+			false; \
+		fi; \
+	else \
+		git clone $(THEME_GIT_URL) $${DIRPATH}; \
+	fi
 
 #################### Android application
 

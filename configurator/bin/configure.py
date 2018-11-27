@@ -175,15 +175,24 @@ def interactive(args):
         'ACTIVATE_PORTAINER', "Activate Portainer, a convenient Docker dashboard with a web UI (https://portainer.io)?", False
     ).add_bool(
         'ACTIVATE_XQUEUE', "Activate Xqueue for external grader services? (https://github.com/edx/xqueue)", False
+    ).add(  # TODO: allow user to disable existing theme - leaving blank in that case uses the previous value
+        'THEME_GIT_URL', "Custom theme URL (leave blank to disale custom theming)", ''
     ).add(
         'ID', "", random_string(8)
     )
 
     # Save values
     with open(args.config, 'w') as f:
-        json.dump(configurator.as_dict(), f, sort_keys=True, indent=4)
+        json.dump(add_computed_values(configurator.as_dict()), f, sort_keys=True, indent=4)
     print("\nConfiguration values were saved to ", args.config)
 
+
+def add_computed_values(values):
+    """Injects values that need to be computed from other settings
+    into the passed dictionary and return the updated dictionary.
+    """
+    values['THEME_NAME'] = os.path.basename(values['THEME_GIT_URL']).replace('.git', '')
+    return values
 
 def substitute(args):
     config = load_config(args)
