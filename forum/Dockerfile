@@ -23,7 +23,8 @@ RUN gem install rake -v $RAKE_VERSION
 RUN gem install rubygems-update && update_rubygems
 
 # Install forum
-RUN git clone https://github.com/edx/cs_comments_service.git --branch open-release/hawthorn.2 --depth 1 /openedx/cs_comments_service
+ARG EDX_PLATFORM_VERSION=open-release/hawthorn.2
+RUN git clone https://github.com/edx/cs_comments_service.git --branch ${EDX_PLATFORM_VERSION} --depth 1 /openedx/cs_comments_service
 WORKDIR /openedx/cs_comments_service
 RUN bundle install --deployment
 

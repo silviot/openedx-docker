@@ -4,8 +4,10 @@ RUN apt update && \
   apt upgrade -y && \
   apt install -y language-pack-en git git-core python-pip libmysqlclient-dev
 
+ARG EDX_PLATFORM_VERSION=open-release/hawthorn.2
+
 RUN mkdir /openedx
-RUN git clone https://github.com/edx/xqueue --branch open-release/hawthorn.2 --depth 1 /openedx/xqueue 
+RUN git clone https://github.com/edx/xqueue --branch ${EDX_PLATFORM_VERSION} --depth 1 /openedx/xqueue
 WORKDIR /openedx/xqueue
 
 RUN pip install -r requirements.txt

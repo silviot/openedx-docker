@@ -4,8 +4,10 @@ RUN apt update && \
   apt upgrade -y && \
   apt install -y language-pack-en git python-pip libmysqlclient-dev
 
+ARG EDX_PLATFORM_VERSION=open-release/hawthorn.2
+
 RUN mkdir /openedx
-RUN git clone https://github.com/edx/edx-notes-api --branch open-release/hawthorn.2 --depth 1 /openedx/edx-notes-api
+RUN git clone https://github.com/edx/edx-notes-api --branch ${EDX_PLATFORM_VERSION} --depth 1 /openedx/edx-notes-api
 WORKDIR /openedx/edx-notes-api
 
 RUN pip install -r requirements/base.txt

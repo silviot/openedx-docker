@@ -128,6 +128,8 @@ def interactive(args):
     if args.silent or os.environ.get('SILENT'):
         configurator.mute()
     configurator.add(
+        'OPENEDX_RELEASE', "Version of Open edX to build.", 'hawthorn.master'
+    ).add(
         'LMS_HOST', "Your website domain name for students (LMS).", 'www.myopenedx.com'
     ).add(
         'CMS_HOST', "Your website domain name for teachers (CMS).", 'studio.' + configurator.get('LMS_HOST')

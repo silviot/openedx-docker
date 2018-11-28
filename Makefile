@@ -15,7 +15,7 @@ endif
 ifeq ($(ACTIVATE_HTTPS), 1)
 	post_configure_targets += https-certificate
 endif
-extra_migrate_targets = 
+extra_migrate_targets =
 ifeq ($(ACTIVATE_XQUEUE), 1)
 	extra_migrate_targets += migrate-xqueue
 	DOCKER_COMPOSE += -f docker-compose-xqueue.yml
@@ -65,7 +65,7 @@ stop: ## Stop all services
 configure: build-configurator ## Configure the environment prior to running the platform
 	docker run --rm -it --volume="$(PWD)/config:/openedx/config" \
 		-e USERID=$(USERID) -e SILENT=$(SILENT) $(CONFIGURE_OPTS) \
-		regis/openedx-configurator:hawthorn
+		regis/openedx-configurator:$(OPENEDX_RELEASE)
 
 post_configure: $(post_configure_targets)
 
@@ -131,7 +131,7 @@ assets-development-cms:
 		&& NODE_ENV=development ./node_modules/.bin/webpack --config=webpack.dev.config.js \
 		&& ./manage.py cms --settings=$(EDX_PLATFORM_SETTINGS) compile_sass studio \
 		&& python -c \"import pavelib.assets; pavelib.assets.collect_assets(['studio'], '$(EDX_PLATFORM_SETTINGS)')\""
-	
+
 
 ##################### Information
 
@@ -171,44 +171,41 @@ update: ## Download most recent images
 
 build: build-openedx build-configurator build-forum build-notes build-xqueue build-android ## Build all docker images
 
-openedx_build_args =
+openedx_build_args = --build-arg="EDX_PLATFORM_VERSION=open-release/$(OPENEDX_RELEASE)"
 ifdef EDX_PLATFORM_REPOSITORY
 	openedx_build_args += --build-arg="EDX_PLATFORM_REPOSITORY=$(EDX_PLATFORM_REPOSITORY)"
 endif
-ifdef EDX_PLATFORM_VERSION
-	openedx_build_args += --build-arg="EDX_PLATFORM_VERSION=$(EDX_PLATFORM_VERSION)"
-endif
 
 build-openedx: ## Build the Open edX docker image
-	docker build -t regis/openedx:latest -t regis/openedx:hawthorn $(openedx_build_args) openedx/
+	docker build -t regis/openedx:latest -t regis/openedx:$(OPENEDX_RELEASE) $(openedx_build_args) openedx/
 build-configurator: ## Build the configurator docker image
-	docker build -t regis/openedx-configurator:latest -t regis/openedx-configurator:hawthorn configurator/
+	docker build -t regis/openedx-configurator:latest -t regis/openedx-configurator:$(OPENEDX_RELEASE) configurator/
 build-forum: ## Build the forum docker image
-	docker build -t regis/openedx-forum:latest -t regis/openedx-forum:hawthorn forum/
+	docker build -t regis/openedx-forum:latest -t regis/openedx-forum:$(OPENEDX_RELEASE) forum/
 build-notes: ## Build the Notes docker image
-	docker build -t regis/openedx-notes:latest -t regis/openedx-notes:hawthorn notes/
+	docker build -t regis/openedx-notes:latest -t regis/openedx-notes:$(OPENEDX_RELEASE) notes/
 build-xqueue: ## Build the Xqueue docker image
-	docker build -t regis/openedx-xqueue:latest -t regis/openedx-xqueue:hawthorn xqueue/
-build-android: ## Build the docker image for Android 
+	docker build -t regis/openedx-xqueue:latest -t regis/openedx-xqueue:$(OPENEDX_RELEASE) xqueue/
+build-android: ## Build the docker image for Android
 	docker build -t regis/openedx-android:latest android/
 
 ################### Pushing images to docker hub
 
 push: push-openedx push-configurator push-forum push-notes push-xqueue push-android ## Push all images to dockerhub
 push-openedx: ## Push Open edX images to dockerhub
-	docker push regis/openedx:hawthorn
+	docker push regis/openedx:$(OPENEDX_RELEASE)
 	docker push regis/openedx:latest
 push-configurator: ## Push configurator image to dockerhub
-	docker push regis/openedx-configurator:hawthorn
+	docker push regis/openedx-configurator:$(OPENEDX_RELEASE)
 	docker push regis/openedx-configurator:latest
 push-forum: ## Push forum image to dockerhub
-	docker push regis/openedx-forum:hawthorn
+	docker push regis/openedx-forum:$(OPENEDX_RELEASE)
 	docker push regis/openedx-forum:latest
 push-notes: ## Push notes image to dockerhub
-	docker push regis/openedx-notes:hawthorn
+	docker push regis/openedx-notes:$(OPENEDX_RELEASE)
 	docker push regis/openedx-notes:latest
 push-xqueue: ## Push Xqueue image to dockerhub
-	docker push regis/openedx-xqueue:hawthorn
+	docker push regis/openedx-xqueue:$(OPENEDX_RELEASE)
 	docker push regis/openedx-xqueue:latest
 push-android: ## Push the Android image to dockerhub
 	docker push regis/openedx-android:latest
@@ -260,10 +257,10 @@ android-release: ## Build the final Android app (beta)
 
 stats: ## Collect anonymous information about the platform
 	@docker run --rm -it --volume="$(PWD)/config:/openedx/config" \
-		regis/openedx-configurator:hawthorn /openedx/config/openedx/stats 2> /dev/null|| true
+		regis/openedx-configurator:$(OPENEDX_RELEASE) /openedx/config/openedx/stats 2> /dev/null|| true
 
 import-demo-course: ## Import the demo course from edX
-	$(DOCKER_COMPOSE_RUN_OPENEDX) cms /bin/bash -c "git clone https://github.com/edx/edx-demo-course ../edx-demo-course && git -C ../edx-demo-course checkout open-release/hawthorn.beta1 && python ./manage.py cms import ../data ../edx-demo-course"
+	$(DOCKER_COMPOSE_RUN_OPENEDX) cms /bin/bash -c "git clone https://github.com/edx/edx-demo-course ../edx-demo-course && git -C ../edx-demo-course checkout open-release/$(OPENEDX_RELEASE) && python ./manage.py cms import ../data ../edx-demo-course"
 
 create-staff-user: ## Create a user with admin rights
 	$(DOCKER_COMPOSE_RUN_OPENEDX) lms /bin/bash -c "./manage.py lms manage_user --superuser --staff ${USERNAME} ${EMAIL} && ./manage.py lms changepassword ${USERNAME}"

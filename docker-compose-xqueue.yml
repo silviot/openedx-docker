@@ -3,7 +3,7 @@ services:
 
   ############# Xqueue: external grading of Open edX problems
   xqueue:
-    image: regis/openedx-xqueue:hawthorn
+    image: regis/openedx-xqueue:${OPENEDX_RELEASE}
     build:
       context: ./xqueue
     volumes:
@@ -14,7 +14,7 @@ services:
       - mysql
 
   xqueue_consumer:
-    image: regis/openedx-xqueue:hawthorn
+    image: regis/openedx-xqueue:${OPENEDX_RELEASE}
     build:
       context: ./xqueue
     volumes:

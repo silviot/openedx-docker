@@ -2,7 +2,7 @@ version: "3"
 services:
 
   android:
-    image: regis/openedx-android:latest
+    image: regis/openedx-android:${OPENEDX_RELEASE}
     build:
       context: ./android
     volumes:
