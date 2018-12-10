@@ -6,6 +6,11 @@ script:
   - make build
   - make databases
   - make assets
+  - make daemonize
+  - until nc -w 3 localhost 80; do sleep 1; done
+  - curl -If studio.localhost
+  - curl -If localhost
+  - docker-compose stop
 deploy:
   provider: script
   script: docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" && make push

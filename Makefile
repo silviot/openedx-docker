@@ -15,7 +15,7 @@ endif
 ifeq ($(ACTIVATE_HTTPS), 1)
 	post_configure_targets += https-certificate
 endif
-extra_migrate_targets = 
+extra_migrate_targets =
 ifeq ($(ACTIVATE_XQUEUE), 1)
 	extra_migrate_targets += migrate-xqueue
 	DOCKER_COMPOSE += -f docker-compose-xqueue.yml
@@ -126,7 +126,7 @@ assets-development-cms:
 		&& NODE_ENV=development ./node_modules/.bin/webpack --config=webpack.dev.config.js \
 		&& ./manage.py cms --settings=$(EDX_PLATFORM_SETTINGS) compile_sass studio \
 		&& python -c \"import pavelib.assets; pavelib.assets.collect_assets(['studio'], '$(EDX_PLATFORM_SETTINGS)')\""
-	
+
 
 ##################### Information
 
@@ -164,7 +164,7 @@ tail-follow: ## Similar to "tail -f" on the logs of a service. E.g: "make tail-f
 update: ## Download most recent images
 	$(DOCKER_COMPOSE) pull
 
-build: build-openedx build-configurator build-forum build-notes build-xqueue build-android ## Build all docker images
+build: build-openedx build-configurator build-forum build-notes build-xqueue ## Build all docker images
 
 openedx_build_args =
 ifdef EDX_PLATFORM_REPOSITORY
@@ -187,7 +187,7 @@ build-notes: ## Build the Notes docker image
 	docker build -t regis/openedx-notes:latest -t regis/openedx-notes:hawthorn notes/
 build-xqueue: ## Build the Xqueue docker image
 	docker build -t regis/openedx-xqueue:latest -t regis/openedx-xqueue:hawthorn xqueue/
-build-android: ## Build the docker image for Android 
+build-android: ## Build the docker image for Android
 	docker build -t regis/openedx-android:latest android/
 
 ################### Pushing images to docker hub
