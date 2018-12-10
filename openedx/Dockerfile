@@ -93,11 +93,11 @@ COPY settings/cms/*.py /openedx/config/universal/cms/
 # 4. compile_sass: compile each sass file individually with libsass. The list of themes to process
 # 5. pavelib.assets.collect_assets: run ./manage.py lms/cms collectstatic. This is the only command that requires a settings file.
 RUN xmodule_assets common/static/xmodule \
-    && python -c "import pavelib.assets; pavelib.assets.process_npm_assets()" \ 
+    && python -c "import pavelib.assets; pavelib.assets.process_npm_assets()" \
     && STATIC_ROOT_LMS=/openedx/data/staticfiles STATIC_ROOT_CMS=/openedx/data/staticfiles/studio NODE_ENV=production ./node_modules/.bin/webpack --config=webpack.prod.config.js
 ARG THEMES=open-edx
 COPY ./themes/ /openedx/themes/
-RUN paver compile_sass --theme-dirs=/openedx/edx-platform/themes,/openedx/themes --themes=$THEMES \
+RUN paver compile_sass --theme-dirs=/openedx/edx-platform/themes,/openedx/themes --themes=$(ls /openedx/themes | paste -s -d, -) \
     && python -c "import pavelib.assets; pavelib.assets.collect_assets(['lms', 'cms'], 'universal.assets')"
 
 # service variant is "lms" or "cms"
